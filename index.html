@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DevAI Pro - v4.0 (Groq Edition)</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#050505">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        body { background: #050505; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { padding: 15px; background: #0a0a0a; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; height: 50px; }
+        .brand { color: #007bff; font-weight: bold; font-size: 1.1rem; }
+        .header-icons { display: flex; gap: 15px; }
+        .icon-btn { background: none; border: none; cursor: pointer; color: #aaa; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+        .icon-btn:hover { color: white; transform: scale(1.1); }
+        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        #chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        .msg { padding: 12px 18px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
+        .user { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
+        .ia { align-self: flex-start; background: #1e1e1e; border: 1px solid #333; border-bottom-left-radius: 2px; }
+        pre { background: #000; padding: 10px; border-radius: 5px; overflow-x: auto; border: 1px solid #444; }
+        code { font-family: 'Courier New', monospace; color: #e6db74; }
+        .input-area { padding: 15px; background: #0a0a0a; display: flex; gap: 10px; border-top: 1px solid #222; }
+        input { flex: 1; background: #151515; color: white; border: 1px solid #333; padding: 12px; border-radius: 8px; outline: none; }
+        input:focus { border-color: #007bff; }
+        #btnEnviar { background: #007bff; border: none; color: white; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #111; border-right: 1px solid #333; z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+        #sidebar.open { left: 0; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-title { font-weight: bold; color: #ccc; }
+        #history-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .history-item { padding: 12px; margin-bottom: 5px; background: #1a1a1a; border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
+        .history-item:hover { background: #252525; border-color: #333; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; display: none; }
+        #overlay.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="overlay" onclick="toggleSidebar()"></div>
+
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">Histórico</span>
+            <button class="icon-btn" onclick="toggleSidebar()">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div id="history-list"></div>
+    </div>
+
+    <header>
+        <div class="brand">DevAI Pro ⚡</div>
+        <div class="header-icons">
+            <button class="icon-btn" onclick="novaConversa()" title="Nova Conversa">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button class="icon-btn" onclick="toggleSidebar()" title="Histórico">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <div id="chat">
+        <div class="msg ia">Mestre, sistema online via Groq. Tudo pronto para codar.</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="prompt" placeholder="Digite sua mensagem..." autocomplete="off">
+        <button id="btnEnviar">➤</button>
+    </div>
+
+    <script>
+        // Chave do Groq atualizada!
+        const API_KEY = "sua_chave_key_aqui"; 
+        
+        const input = document.getElementById('prompt');
+        const chat = document.getElementById('chat');
+        const btnEnviar = document.getElementById('btnEnviar');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const historyList = document.getElementById('history-list');
+
+        let currentChatHistory = [];
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            if (sidebar.classList.contains('open')) carregarHistoricoSalvo();
+        }
+
+        function novaConversa() {
+            chat.innerHTML = `<div class="msg ia">Nova conversa iniciada. O que vamos codar hoje?</div>`;
+            currentChatHistory = [];
+            if(window.innerWidth < 768) input.blur();
+        }
+
+        function salvarNoHistorico(primeiraMensagem) {
+            let historicoGeral = JSON.parse(localStorage.getItem('devai_history')) || [];
+            historicoGeral.unshift({ titulo: primeiraMensagem, data: new Date().toLocaleString() });
+            if(historicoGeral.length > 20) historicoGeral.pop();
+            localStorage.setItem('devai_history', JSON.stringify(historicoGeral));
+        }
+
+        function carregarHistoricoSalvo() {
+            let historicoGeral = JSON.parse(localStorage.getItem('devai_history')) || [];
+            historyList.innerHTML = historicoGeral.length === 0 ? "<div style='color:#555; text-align:center; margin-top:20px'>Nenhum histórico</div>" : "";
+            historicoGeral.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerText = item.titulo;
+                div.onclick = () => { novaConversa(); chat.innerHTML = `<div class="msg user">${item.titulo}</div><div class="msg ia"><i>(Chat restaurado...)</i></div>`; toggleSidebar(); };
+                historyList.appendChild(div);
+            });
+        }
+
+        async function enviar() {
+            const texto = input.value.trim();
+            if (!texto) return;
+
+            if (currentChatHistory.length === 0) salvarNoHistorico(texto);
+
+            chat.innerHTML += `<div class="msg user">${texto}</div>`;
+            input.value = "";
+            const tempId = "id" + Date.now();
+            chat.innerHTML += `<div class="msg ia" id="${tempId}"><i>Processando no Groq...</i></div>`;
+            chat.scrollTop = chat.scrollHeight;
+
+            try {
+                // Chamada para a API do Groq
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            { role: "system", content: "Você é o DevAI Pro, um Engenheiro de Software Sênior. Responda de forma técnica e direta em Português." },
+                            { role: "user", content: texto }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                const containerIA = document.getElementById(tempId);
+
+                if (data.choices && data.choices[0].message.content) {
+                    let resposta = data.choices[0].message.content;
+                    containerIA.innerHTML = marked.parse(resposta);
+                } else {
+                    containerIA.innerText = "Erro na API: " + (data.error ? data.error.message : "Sem resposta");
+                }
+            } catch (err) {
+                document.getElementById(tempId).innerText = "Erro de conexão com o servidor.";
+                console.error(err);
+            }
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        btnEnviar.onclick = enviar;
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviar(); });
+    </script>
+</body>
+</html>
