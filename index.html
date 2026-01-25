@@ -3,98 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DevAI Pro - Final</title>
-    
+    <title>DevAI Pro - v5.0</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        /* AJUSTE PARA O RODAPÉ APARECER NO CELULAR */
         * { box-sizing: border-box; }
+        body { background: #050505; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+        header { padding: 15px; background: #0a0a0a; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; height: 60px; flex-shrink: 0; }
+        .brand { color: #007bff; font-weight: bold; }
+        #chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 12px 18px; border-radius: 15px; max-width: 90%; font-size: 15px; line-height: 1.6; position: relative; }
+        .user { align-self: flex-end; background: #007bff; border-bottom-right-radius: 2px; }
+        .ia { align-self: flex-start; background: #1e1e1e; border: 1px solid #333; border-bottom-left-radius: 2px; width: 100%; }
         
-        body { 
-            background: #050505; 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100dvh; /* Altura dinâmica para celular */
-            width: 100vw;
-            overflow: hidden; 
-        }
+        /* ESTILO DA CAIXA DE CÓDIGO */
+        pre { background: #000 !important; padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid #444; position: relative; margin: 10px 0; }
+        code { font-family: 'Consolas', monospace; color: #79c0ff; }
+        .btn-copy { position: absolute; top: 5px; right: 5px; background: #333; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; z-index: 10; }
+        .btn-copy:hover { background: #007bff; }
 
-        header { 
-            padding: 15px; 
-            background: #0a0a0a; 
-            border-bottom: 1px solid #222; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            height: 60px;
-            flex-shrink: 0;
-        }
-
-        .brand { color: #007bff; font-weight: bold; font-size: 1.1rem; }
-
-        #chat { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            background: #050505;
-        }
-
-        .msg { padding: 12px 18px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
-        .user { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
-        .ia { align-self: flex-start; background: #1e1e1e; border: 1px solid #333; border-bottom-left-radius: 2px; }
-
-        /* BARRA DE MENSAGEM FIXA NO FUNDO */
-        .input-area { 
-            padding: 10px 15px; 
-            background: #0a0a0a; 
-            display: flex; 
-            gap: 10px; 
-            border-top: 1px solid #222; 
-            height: 70px;
-            flex-shrink: 0;
-        }
-
-        input { 
-            flex: 1; 
-            background: #151515; 
-            color: white; 
-            border: 1px solid #333; 
-            padding: 12px; 
-            border-radius: 8px; 
-            outline: none;
-            font-size: 16px; /* Evita zoom automático no iPhone */
-        }
-
-        #btnEnviar { 
-            background: #007bff; 
-            border: none; 
-            color: white; 
-            padding: 0 20px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            cursor: pointer; 
-        }
+        .input-area { padding: 10px 15px; background: #0a0a0a; display: flex; gap: 10px; height: 70px; border-top: 1px solid #222; }
+        input { flex: 1; background: #151515; color: white; border: 1px solid #333; padding: 12px; border-radius: 8px; outline: none; font-size: 16px; }
+        #btnEnviar { background: #007bff; border: none; color: white; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="brand">DevAI Pro ⚡</div>
-    </header>
-
-    <div id="chat">
-        <div class="msg ia">Mestre, sistema online. A barra de mensagens agora deve estar visível abaixo!</div>
-    </div>
-
+    <header><div class="brand">DevAI Pro ⚡</div></header>
+    <div id="chat"><div class="msg ia">Mestre, agora com suporte a blocos de código e botão copiar!</div></div>
     <div class="input-area">
-        <input type="text" id="prompt" placeholder="Digite sua mensagem..." autocomplete="off">
+        <input type="text" id="prompt" placeholder="Peça um script aqui..." autocomplete="off">
         <button id="btnEnviar">➤</button>
     </div>
 
@@ -102,17 +40,20 @@
         const input = document.getElementById('prompt');
         const chat = document.getElementById('chat');
         const btnEnviar = document.getElementById('btnEnviar');
-
-        // CHAVE API (Para teste rápido, depois você pode esconder na Vercel)
         const CHAVE = "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";
+
+        // Configura o Marked para usar o Highlight.js
+        marked.setOptions({
+            highlight: function(code, lang) {
+                return hljs.highlightAuto(code).value;
+            }
+        });
 
         async function enviar() {
             const texto = input.value.trim();
             if (!texto) return;
-
             chat.innerHTML += `<div class="msg user">${texto}</div>`;
             input.value = "";
-            
             const tempId = "id" + Date.now();
             chat.innerHTML += `<div class="msg ia" id="${tempId}"><i>Processando...</i></div>`;
             chat.scrollTop = chat.scrollHeight;
@@ -120,27 +61,36 @@
             try {
                 const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${CHAVE}`,
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Authorization": `Bearer ${CHAVE}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [{ role: "user", content: texto }]
+                        messages: [
+                            { role: "system", content: "Você é um mestre em programação. Responda em português. Sempre use blocos de código Markdown." },
+                            { role: "user", content: texto }
+                        ]
                     })
                 });
-
                 const data = await response.json();
-                const containerIA = document.getElementById(tempId);
+                const respostaFinal = data.choices[0].message.content;
+                document.getElementById(tempId).innerHTML = marked.parse(respostaFinal);
                 
-                if (data.choices) {
-                    containerIA.innerHTML = marked.parse(data.choices[0].message.content);
-                } else {
-                    containerIA.innerText = "Erro na resposta da IA.";
-                }
-            } catch (err) {
-                document.getElementById(tempId).innerText = "Erro de conexão.";
-            }
+                // Adiciona botão copiar em cada bloco de código
+                document.querySelectorAll('pre').forEach(pre => {
+                    if (!pre.querySelector('.btn-copy')) {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn-copy';
+                        btn.innerText = 'Copiar';
+                        btn.onclick = () => {
+                            const code = pre.querySelector('code').innerText;
+                            navigator.clipboard.writeText(code);
+                            btn.innerText = 'Copiado!';
+                            setTimeout(() => btn.innerText = 'Copiar', 2000);
+                        };
+                        pre.appendChild(btn);
+                    }
+                });
+                hljs.highlightAll();
+            } catch (err) { document.getElementById(tempId).innerText = "Erro de conexão."; }
             chat.scrollTop = chat.scrollHeight;
         }
 
