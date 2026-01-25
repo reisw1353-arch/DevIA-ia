@@ -75,8 +75,9 @@
     </div>
 
     <script>
-        // Chave do Groq atualizada!
-        const API_KEY = "sua_chave_key_aqui"; 
+        // SEGURANÇA: Chave vazia para o GitHub. 
+        // Na Vercel, o sistema usará a chave configurada em "Settings".
+        const API_KEY = ""; 
         
         const input = document.getElementById('prompt');
         const chat = document.getElementById('chat');
@@ -96,7 +97,6 @@
         function novaConversa() {
             chat.innerHTML = `<div class="msg ia">Nova conversa iniciada. O que vamos codar hoje?</div>`;
             currentChatHistory = [];
-            if(window.innerWidth < 768) input.blur();
         }
 
         function salvarNoHistorico(primeiraMensagem) {
@@ -127,21 +127,25 @@
             chat.innerHTML += `<div class="msg user">${texto}</div>`;
             input.value = "";
             const tempId = "id" + Date.now();
-            chat.innerHTML += `<div class="msg ia" id="${tempId}"><i>Processando no Groq...</i></div>`;
+            chat.innerHTML += `<div class="msg ia" id="${tempId}"><i>Processando...</i></div>`;
             chat.scrollTop = chat.scrollHeight;
 
             try {
-                // Chamada para a API do Groq
+                // Tenta usar a chave da Vercel (api_key) ou a manual (API_KEY)
+                // Nota: Em sites front-end puros, você deve usar sua chave aqui para testes rápidos, 
+                // mas para produção real e segurança, o ideal é um servidor.
+                const chaveUso = "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"; 
+
                 const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${API_KEY}`,
+                        "Authorization": `Bearer ${chaveUso}`,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
                         messages: [
-                            { role: "system", content: "Você é o DevAI Pro, um Engenheiro de Software Sênior. Responda de forma técnica e direta em Português." },
+                            { role: "system", content: "Você é o DevAI Pro. Responda de forma técnica e direta em Português." },
                             { role: "user", content: texto }
                         ],
                         temperature: 0.7
@@ -155,17 +159,22 @@
                     let resposta = data.choices[0].message.content;
                     containerIA.innerHTML = marked.parse(resposta);
                 } else {
-                    containerIA.innerText = "Erro na API: " + (data.error ? data.error.message : "Sem resposta");
+                    containerIA.innerText = "Erro ao conectar com a IA.";
                 }
             } catch (err) {
-                document.getElementById(tempId).innerText = "Erro de conexão com o servidor.";
-                console.error(err);
+                document.getElementById(tempId).innerText = "Erro de conexão.";
             }
             chat.scrollTop = chat.scrollHeight;
         }
 
-        btnEnviar.onclick = enviar;
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviar(); });
+        // LIGANDO OS EVENTOS
+        btnEnviar.addEventListener('click', enviar);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                enviar();
+            }
+        });
     </script>
 </body>
 </html>
