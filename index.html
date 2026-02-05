@@ -3,179 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DevAI Pro - Manager</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    
+    <title>PK Simulator - Top Gifter Edition</title>
     <style>
-        * { box-sizing: border-box; }
-        body { background: #050505; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100dvh; overflow: hidden; }
+        :root { --pink: #ff0050; --cyan: #00f2ea; --dark: #010101; --gold: #ffd700; --lvl-blue: #2575fc; }
+        * { user-select: none; box-sizing: border-box; font-family: 'Arial Black', sans-serif; }
+        body { background: var(--dark); color: white; margin: 0; overflow: hidden; }
 
-        /* Menu Lateral */
-        #sidebar { width: 260px; background: #0a0a0a; border-right: 1px solid #222; display: flex; flex-direction: column; transition: 0.3s; position: absolute; left: -260px; height: 100%; z-index: 1000; }
-        #sidebar.open { left: 0; }
-        .sidebar-header { padding: 15px; border-bottom: 1px solid #222; }
-        .new-chat-btn { width: 100%; padding: 10px; background: transparent; border: 1px solid #444; color: white; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .chat-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .chat-item { padding: 10px; border-radius: 5px; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; border-bottom: 1px solid #111; }
-        .chat-item:hover { background: #1e1e1e; }
+        /* HUD SUPERIOR */
+        .gifter-hud { position: absolute; top: 0; width: 100%; padding: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        .lvl-badge { background: var(--lvl-blue); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 5px; box-shadow: 0 0 5px var(--lvl-blue); }
+        .coin-box { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; border: 1px solid #444; color: var(--gold); font-size: 12px; }
 
-        /* Área Principal */
-        main { flex: 1; display: flex; flex-direction: column; width: 100%; }
-        header { padding: 15px; background: #0a0a0a; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; height: 60px; }
-        .menu-toggle { font-size: 20px; cursor: pointer; }
+        /* LIVES */
+        .live-wrap { display: flex; height: 45vh; width: 100%; margin-top: 55px; background: #000; position: relative; }
+        .cam { flex: 1; position: relative; overflow: hidden; border: 0.5px solid #222; }
+        .streamer-info { position: absolute; top: 8px; left: 8px; z-index: 10; display: flex; flex-direction: column; gap: 4px; }
+        .name-tag { background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 4px; font-size: 11px; border-left: 3px solid var(--cyan); }
+        .wins-badge { background: linear-gradient(45deg, #f39c12, #f1c40f); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; width: fit-content; }
 
-        #chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { padding: 12px 18px; border-radius: 15px; max-width: 90%; font-size: 15px; position: relative; }
-        .user { align-self: flex-end; background: #007bff; border-bottom-right-radius: 2px; }
-        .ia { align-self: flex-start; background: #1e1e1e; border: 1px solid #333; border-bottom-left-radius: 2px; width: 100%; }
+        /* RANKING TOPS DA LIVE */
+        .top-donors { position: absolute; top: 50px; left: 8px; z-index: 20; width: 120px; font-size: 9px; pointer-events: none; }
+        .donor-item { background: rgba(0,0,0,0.4); margin-bottom: 2px; padding: 2px 6px; border-radius: 10px; display: flex; align-items: center; gap: 4px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        pre { background: #000 !important; padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid #444; position: relative; margin: 10px 0; }
-        .btn-copy { position: absolute; top: 5px; right: 5px; background: #333; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; }
+        /* BUFFS (LUVA/NÉVOA) */
+        .buff-timer { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 11px; font-weight: bold; z-index: 30; text-shadow: 0 0 5px #000; }
+        .buff-luva { color: var(--gold); }
+        .buff-nevoa { color: #fff; font-style: italic; }
 
-        .input-area { padding: 10px 15px; background: #0a0a0a; display: flex; gap: 10px; height: 70px; border-top: 1px solid #222; }
-        input { flex: 1; background: #151515; color: white; border: 1px solid #333; padding: 12px; border-radius: 8px; font-size: 16px; outline: none; }
-        #btnEnviar { background: #007bff; border: none; color: white; padding: 0 20px; border-radius: 8px; font-weight: bold; }
+        /* PLACAR */
+        .pk-section { background: #000; padding: 10px 15px; }
+        .timer { text-align: center; font-size: 14px; margin-bottom: 8px; color: #ccc; }
+        .bar-container { width: 100%; height: 30px; background: var(--pink); border-radius: 6px; position: relative; overflow: hidden; border: 2px solid #000; }
+        #my-bar { width: 50%; height: 100%; background: var(--cyan); transition: width 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        .score-text { position: absolute; top: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; font-size: 14px; font-weight: 900; text-shadow: 1px 1px 2px #000; }
+
+        #chat { height: 20vh; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; font-size: 12px; }
+        .msg { margin-bottom: 4px; background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 15px; width: fit-content; }
+
+        /* PAINEL DE PRESENTES */
+        .gift-panel { position: fixed; bottom: -100%; width: 100%; background: #1a1a1a; border-radius: 20px 20px 0 0; transition: 0.3s; z-index: 1000; padding: 20px; border-top: 1px solid #333; }
+        .gift-panel.active { bottom: 0; }
+        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-height: 280px; overflow-y: auto; }
+        .gift-card { background: #262626; padding: 15px 5px; border-radius: 15px; text-align: center; font-size: 10px; position: relative; }
+        
+        .floating-anim { position: absolute; font-size: 80px; animation: giftOut 1s forwards; pointer-events: none; z-index: 100; text-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        @keyframes giftOut { 0% { transform: scale(0) translateY(0); opacity: 0; } 50% { transform: scale(1.2) opacity: 1; } 100% { transform: scale(1) translateY(-150px); opacity: 0; } }
     </style>
 </head>
-<body>
+<body onclick="fecharModais()">
 
-    <div id="sidebar">
-        <div class="sidebar-header">
-            <button class="new-chat-btn" onclick="iniciarNovoChat()">+ Nova Conversa</button>
+<div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:999;"></div>
+
+<div class="gifter-hud">
+    <div onclick="trocarConta(); event.stopPropagation()">
+        <span class="lvl-badge" id="my-lvl-top">Lv.1</span>
+        <span id="my-name-display" style="font-size:13px; border-bottom: 1px dashed white;">@Gifter</span>
+    </div>
+    <div class="coin-box" onclick="addCoins(); event.stopPropagation()">🪙 <span id="coins-display">0</span></div>
+</div>
+
+<div class="live-wrap">
+    <div class="cam" id="side-me">
+        <div class="streamer-info">
+            <div class="name-tag" id="cur-streamer-name">@BLACK BOLT</div>
+            <div class="wins-badge" id="wins-me">WINS: 0</div>
         </div>
-        <div id="chatList" class="chat-list"></div>
+        <div class="top-donors" id="tops-me"></div>
+        <div class="buff-timer" id="buff-me"></div>
+        <div id="anim-me" style="position:absolute; width:100%; height:100%; pointer-events:none;"></div>
     </div>
 
-    <main>
-        <header>
-            <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
-            <div style="color: #007bff; font-weight: bold;">DevAI Pro ⚡</div>
-            <div onclick="iniciarNovoChat()" style="cursor:pointer; font-size: 20px;">+</div>
-        </header>
-
-        <div id="chat"></div>
-
-        <div class="input-area">
-            <input type="text" id="prompt" placeholder="Sua mensagem..." autocomplete="off">
-            <button id="btnEnviar">➤</button>
+    <div class="cam" id="side-op">
+        <div class="streamer-info">
+            <div class="name-tag">@Oponente_Sniper</div>
+            <div class="wins-badge" id="wins-op">WINS: 0</div>
         </div>
-    </main>
+        <div class="top-donors" id="tops-op"></div>
+        <div class="buff-timer" id="buff-op"></div>
+        <div id="anim-op" style="position:absolute; width:100%; height:100%; pointer-events:none;"></div>
+    </div>
+</div>
 
-    <script>
-        const chatContainer = document.getElementById('chat');
-        const chatListContainer = document.getElementById('chatList');
-        const input = document.getElementById('prompt');
-        const CHAVE = "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";
+<div class="pk-section">
+    <div class="timer" id="timer">05:00</div>
+    <div class="bar-container">
+        <div id="my-bar"></div>
+        <div class="score-text">
+            <span id="score-me">0</span>
+            <span id="score-op">0</span>
+        </div>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:8px;">
+        <button onclick="startPK(); event.stopPropagation()" style="flex:1; padding:10px; border-radius:10px; background:var(--gold); border:none; font-weight:bold;">⚔️ INICIAR PK</button>
+        <button onclick="changeStreamer(); event.stopPropagation()" style="flex:1; padding:10px; border-radius:10px; background:#333; color:white; border:none;">🔄 MUDAR LIVE</button>
+    </div>
+</div>
 
-        let chatAtualId = Date.now();
-        let historico = [];
-        let todasConversas = JSON.parse(localStorage.getItem('devai_chats')) || {};
+<div id="chat"></div>
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+<div style="position:fixed; bottom:0; width:100%; padding:15px; display:flex; justify-content:flex-end; background:linear-gradient(transparent, #000);">
+    <button onclick="abrirGifts(event)" style="width:60px; height:60px; border-radius:50%; background:linear-gradient(to top, var(--pink), #ff5588); border:none; font-size:28px; color:white; box-shadow: 0 4px 20px rgba(255,0,80,0.5);">🎁</button>
+</div>
 
-        function salvarNoLocalStorage() {
-            if (historico.length > 1) {
-                const titulo = historico[1].content.substring(0, 30) + "...";
-                todasConversas[chatAtualId] = { titulo, historico };
-                localStorage.setItem('devai_chats', JSON.stringify(todasConversas));
-                renderizarListaConversas();
-            }
+<div id="gift-panel" class="gift-panel" onclick="event.stopPropagation()">
+    <div style="margin-bottom:15px; font-size:12px; color:#aaa">Apoiando <b id="target-name">BLACK BOLT</b></div>
+    <div class="gift-grid" id="gift-grid"></div>
+</div>
+
+<script>
+    // SISTEMA DE CONTAS
+    let db = JSON.parse(localStorage.getItem('pk_gifter_v3')) || {
+        active: "CONTA_A",
+        accounts: {
+            "CONTA_A": { name: "Bolt_Fan", lvl: 10, coins: 1000000, xp: 0 },
+            "CONTA_B": { name: "Boss_Sniper", lvl: 45, coins: 5000000, xp: 0 }
         }
+    };
 
-        function renderizarListaConversas() {
-            chatListContainer.innerHTML = '';
-            Object.keys(todasConversas).reverse().forEach(id => {
-                const div = document.createElement('div');
-                div.className = 'chat-item';
-                div.innerText = todasConversas[id].titulo;
-                div.onclick = () => carregarConversa(id);
-                chatListContainer.appendChild(div);
-            });
-        }
+    // ESTADO DA LIVE
+    let st = { 
+        pk: false, time: 300, ptsMe: 0, ptsOp: 0, winsMe: 0, winsOp: 0,
+        luvaMe: 0, luvaOp: 0, nevoaMe: 0, nevoaOp: 0,
+        topsMe: {}, topsOp: {}, streamer: "BLACK BOLT"
+    };
 
-        function carregarConversa(id) {
-            chatAtualId = id;
-            historico = todasConversas[id].historico;
-            chatContainer.innerHTML = '';
-            historico.forEach(msg => {
-                if (msg.role !== 'system') {
-                    renderizarMensagem(msg.role === 'user' ? 'user' : 'ia', msg.content);
-                }
-            });
-            toggleSidebar();
-        }
+    const gifts = [
+        { n: 'Rosa', i: '🌹', p: 1 }, { n: 'Névoa', i: '🌪️', p: 400 }, 
+        { n: 'Luva', i: '🧤', p: 1500 }, { n: 'Baleia', i: '🐳', p: 2500 },
+        { n: 'Mini Lion', i: '🦁🍼', p: 10000 }, { n: 'Leão', i: '🦁', p: 29000 },
+        { n: 'Leoa', i: '🦁❤️', p: 34000 }, { n: 'Universo', i: '🪐', p: 44000 }
+    ];
 
-        function iniciarNovoChat() {
-            chatAtualId = Date.now();
-            historico = [{ role: "system", content: "Responda em português com blocos de código." }];
-            chatContainer.innerHTML = '<div class="msg ia">Nova conversa iniciada. O que vamos codar hoje?</div>';
-            if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-        }
+    function loadAccount() {
+        let a = db.accounts[db.active];
+        document.getElementById('my-name-display').innerText = "@" + a.name;
+        document.getElementById('my-lvl-top').innerText = "Lv." + a.lvl;
+        document.getElementById('coins-display').innerText = a.coins.toLocaleString();
+    }
 
-        function renderizarMensagem(tipo, texto) {
-            const div = document.createElement('div');
-            div.className = `msg ${tipo}`;
-            div.innerHTML = marked.parse(texto);
-            chatContainer.appendChild(div);
-            aplicarBotaoCopiar(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            hljs.highlightAll();
-        }
-
-        function aplicarBotaoCopiar(container) {
-            container.querySelectorAll('pre').forEach(pre => {
-                const btn = document.createElement('button');
-                btn.className = 'btn-copy';
-                btn.innerText = 'Copiar';
-                btn.onclick = () => {
-                    navigator.clipboard.writeText(pre.querySelector('code').innerText);
-                    btn.innerText = 'Copiado!';
-                    setTimeout(() => btn.innerText = 'Copiar', 2000);
-                };
-                pre.appendChild(btn);
-            });
-        }
-
-        async function enviar() {
-            const texto = input.value.trim();
-            if (!texto) return;
-
-            renderizarMensagem('user', texto);
-            historico.push({ role: "user", content: texto });
-            input.value = "";
-
-            const tempId = "ia-" + Date.now();
-            const divIA = document.createElement('div');
-            divIA.className = 'msg ia';
-            divIA.id = tempId;
-            divIA.innerHTML = "<i>Digitando...</i>";
-            chatContainer.appendChild(divIA);
-
-            try {
-                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${CHAVE}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: historico })
-                });
-                const data = await res.json();
-                const resp = data.choices[0].message.content;
-                historico.push({ role: "assistant", content: resp });
-                divIA.innerHTML = marked.parse(resp);
-                aplicarBotaoCopiar(divIA);
-                salvarNoLocalStorage();
-            } catch { divIA.innerText = "Erro."; }
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            hljs.highlightAll();
-        }
-
-        document.getElementById('btnEnviar').onclick = enviar;
-        input.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
+    function processGift(side, sender, giftIdx, amount, lvl = 1) {
+        let g = gifts[giftIdx];
+        let val = g.p * amount;
         
-        iniciarNovoChat();
-        renderizarListaConversas();
-    </script>
+        // Aplica Luva (x3)
+        if(side === 'me' && st.luvaMe > 0) val *= 3;
+        if(side === 'op' && st.luvaOp > 0) val *= 3;
+
+        if(side === 'me') { 
+            st.ptsMe += val; 
+            st.topsMe[sender] = { points: (st.topsMe[sender]?.points || 0) + val, lvl: lvl };
+        } else { 
+            st.ptsOp += val; 
+            st.topsOp[sender] = { points: (st.topsOp[sender]?.points || 0) + val, lvl: lvl };
+        }
+
+        // Ativa Efeitos
+        if(giftIdx === 1) { if(side === 'me') st.nevoaOp = 15; else st.nevoaMe = 15; }
+        if(giftIdx === 2) { if(side === 'me') st.luvaMe = 30; else st.luvaOp = 30; }
+
+        renderTops();
+        updateUI();
+
+        // Animação e Chat
+        if(val >= 1000) {
+            let slot = document.getElementById(side === 'me' ? 'anim-me' : 'anim-op');
+            let a = document.createElement('div'); a.className = 'floating-anim';
+            a.innerText = g.i; a.style.left = Math.random()*50+20+"%"; a.style.top = "40%";
+            slot.appendChild(a); setTimeout(() => a.remove(), 1000);
+        }
+        let chat = document.getElementById('chat');
+        chat.innerHTML += `<div class="msg"><b>${sender}</b>: ${g.i} x${amount}</div>`;
+        if(chat.childNodes.length > 5) chat.removeChild(chat.firstChild);
+    }
+
+    function renderTops() {
+        const draw = (side) => {
+            let container = document.getElementById('tops-' + side);
+            let data = side === 'me' ? st.topsMe : st.topsOp;
+            let html = "";
+            Object.entries(data).sort((a,b) => b[1].points - a[1].points).slice(0,5).forEach(([name, info]) => {
+                html += `<div class="donor-item"><span class="lvl-badge" style="zoom:0.8">Lv.${info.lvl}</span> <b>${name}</b></div>`;
+            });
+            container.innerHTML = html;
+        };
+        draw('me'); draw('op');
+    }
+
+    function startPK() {
+        if(st.pk) return;
+        st.pk = true; st.ptsMe = 0; st.ptsOp = 0; st.time = 300;
+        st.luvaMe = 0; st.luvaOp = 0; st.nevoaMe = 0; st.nevoaOp = 0;
+        updateUI();
+
+        let loop = setInterval(() => {
+            st.time--;
+            if(st.luvaMe > 0) st.luvaMe--; if(st.luvaOp > 0) st.luvaOp--;
+            if(st.nevoaMe > 0) st.nevoaMe--; if(st.nevoaOp > 0) st.nevoaOp--;
+
+            // IA Adversária
+            if(Math.random() > 0.94) processGift('op', '@Oponente_Pro', 0, 100, 20);
+            if(st.time < 10 && st.ptsMe > st.ptsOp && Math.random() > 0.6) processGift('op', '@Sniper_Hater', 7, 1, 50);
+
+            updateUI();
+
+            if(st.time <= 0) {
+                clearInterval(loop); st.pk = false;
+                if(st.ptsMe > st.ptsOp) { st.winsMe++; st.winsOp = 0; alert("VITÓRIA!"); }
+                else { st.winsMe = 0; st.winsOp++; alert("DERROTA! WINS RESETADAS."); }
+                updateUI();
+            }
+        }, 1000);
+    }
+
+    function updateUI() {
+        document.getElementById('score-me').innerText = st.nevoaMe > 0 ? "???" : st.ptsMe.toLocaleString();
+        document.getElementById('score-op').innerText = st.nevoaOp > 0 ? "???" : st.ptsOp.toLocaleString();
+        document.getElementById('wins-me').innerText = "WINS: " + st.winsMe;
+        document.getElementById('wins-op').innerText = "WINS: " + st.winsOp;
+        document.getElementById('timer').innerText = `${Math.floor(st.time/60)}:${(st.time%60).toString().padStart(2,'0')}`;
+        document.getElementById('my-bar').style.width = (st.ptsMe / (st.ptsMe + st.ptsOp) * 100 || 50) + "%";
+        
+        // Timers de Buffs
+        document.getElementById('buff-me').innerHTML = 
+            (st.luvaMe > 0 ? `<div class="buff-luva">🧤 LUVA x3: ${st.luvaMe}s</div>` : "") +
+            (st.nevoaMe > 0 ? `<div class="buff-nevoa">🌪️ NÉVOA: ${st.nevoaMe}s</div>` : "");
+        document.getElementById('buff-op').innerHTML = 
+            (st.luvaOp > 0 ? `<div class="buff-luva">🧤 LUVA x3: ${st.luvaOp}s</div>` : "") +
+            (st.nevoaOp > 0 ? `<div class="buff-nevoa">🌪️ NÉVOA: ${st.nevoaOp}s</div>` : "");
+    }
+
+    function sendGift(idx) {
+        if(!st.pk) return;
+        let a = db.accounts[db.active];
+        let g = gifts[idx];
+        if(a.coins >= g.p) {
+            a.coins -= g.p; a.xp += g.p;
+            if(a.xp >= a.lvl * 5000) { a.lvl++; a.xp = 0; }
+            processGift('me', "@" + a.name, idx, 1, a.lvl);
+            loadAccount();
+            localStorage.setItem('pk_gifter_v3', JSON.stringify(db));
+        }
+    }
+
+    function trocarConta() {
+        let n = prompt("Nome da conta:");
+        if(!n) return;
+        let id = n.toUpperCase().replace(/\s/g, '_');
+        if(!db.accounts[id]) db.accounts[id] = { name: n, lvl: 1, coins: 50000, xp: 0 };
+        db.active = id; loadAccount();
+    }
+
+    function changeStreamer() {
+        let n = prompt("Apoiar qual streamer?");
+        if(n) {
+            st.streamer = n.toUpperCase();
+            st.winsMe = 0; st.winsOp = 0; st.ptsMe = 0; st.ptsOp = 0;
+            st.topsMe = {}; st.topsOp = {};
+            document.getElementById('cur-streamer-name').innerText = "@" + st.streamer;
+            document.getElementById('target-name').innerText = st.streamer;
+            renderTops(); updateUI();
+        }
+    }
+
+    function addCoins() { let v = prompt("Moedas:"); if(v) { db.accounts[db.active].coins += parseInt(v); loadAccount(); } }
+    function abrirGifts(e) { e.stopPropagation(); document.getElementById('gift-panel').classList.add('active'); document.getElementById('overlay').style.display='block'; }
+    function fecharModais() { document.getElementById('gift-panel').classList.remove('active'); document.getElementById('overlay').style.display='none'; }
+
+    // Init
+    const grid = document.getElementById('gift-grid');
+    gifts.forEach((g, i) => {
+        let c = document.createElement('div'); c.className = 'gift-card';
+        c.innerHTML = `<div style="font-size:26px">${g.i}</div><div>${g.n}</div><div style="color:var(--gold)">${g.p}</div>`;
+        c.onclick = () => sendGift(i);
+        grid.appendChild(c);
+    });
+    loadAccount(); updateUI();
+</script>
 </body>
 </html>
