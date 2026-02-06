@@ -3,282 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PK Simulator - Top Gifter Edition</title>
+    <title>Guerra de Guildas PRO</title>
     <style>
-        :root { --pink: #ff0050; --cyan: #00f2ea; --dark: #010101; --gold: #ffd700; --lvl-blue: #2575fc; }
-        * { user-select: none; box-sizing: border-box; font-family: 'Arial Black', sans-serif; }
-        body { background: var(--dark); color: white; margin: 0; overflow: hidden; }
-
-        /* HUD SUPERIOR */
-        .gifter-hud { position: absolute; top: 0; width: 100%; padding: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
-        .lvl-badge { background: var(--lvl-blue); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 5px; box-shadow: 0 0 5px var(--lvl-blue); }
-        .coin-box { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; border: 1px solid #444; color: var(--gold); font-size: 12px; }
-
-        /* LIVES */
-        .live-wrap { display: flex; height: 45vh; width: 100%; margin-top: 55px; background: #000; position: relative; }
-        .cam { flex: 1; position: relative; overflow: hidden; border: 0.5px solid #222; }
-        .streamer-info { position: absolute; top: 8px; left: 8px; z-index: 10; display: flex; flex-direction: column; gap: 4px; }
-        .name-tag { background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 4px; font-size: 11px; border-left: 3px solid var(--cyan); }
-        .wins-badge { background: linear-gradient(45deg, #f39c12, #f1c40f); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; width: fit-content; }
-
-        /* RANKING TOPS DA LIVE */
-        .top-donors { position: absolute; top: 50px; left: 8px; z-index: 20; width: 120px; font-size: 9px; pointer-events: none; }
-        .donor-item { background: rgba(0,0,0,0.4); margin-bottom: 2px; padding: 2px 6px; border-radius: 10px; display: flex; align-items: center; gap: 4px; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* BUFFS (LUVA/NÉVOA) */
-        .buff-timer { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 11px; font-weight: bold; z-index: 30; text-shadow: 0 0 5px #000; }
-        .buff-luva { color: var(--gold); }
-        .buff-nevoa { color: #fff; font-style: italic; }
-
-        /* PLACAR */
-        .pk-section { background: #000; padding: 10px 15px; }
-        .timer { text-align: center; font-size: 14px; margin-bottom: 8px; color: #ccc; }
-        .bar-container { width: 100%; height: 30px; background: var(--pink); border-radius: 6px; position: relative; overflow: hidden; border: 2px solid #000; }
-        #my-bar { width: 50%; height: 100%; background: var(--cyan); transition: width 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-        .score-text { position: absolute; top: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; font-size: 14px; font-weight: 900; text-shadow: 1px 1px 2px #000; }
-
-        #chat { height: 20vh; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; font-size: 12px; }
-        .msg { margin-bottom: 4px; background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 15px; width: fit-content; }
-
-        /* PAINEL DE PRESENTES */
-        .gift-panel { position: fixed; bottom: -100%; width: 100%; background: #1a1a1a; border-radius: 20px 20px 0 0; transition: 0.3s; z-index: 1000; padding: 20px; border-top: 1px solid #333; }
-        .gift-panel.active { bottom: 0; }
-        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-height: 280px; overflow-y: auto; }
-        .gift-card { background: #262626; padding: 15px 5px; border-radius: 15px; text-align: center; font-size: 10px; position: relative; }
+        :root { --gold: #ffb400; --orange: #ff6a00; --bg: #0d0d0d; --card: #3d2616; --text: #e0e0e0; }
         
-        .floating-anim { position: absolute; font-size: 80px; animation: giftOut 1s forwards; pointer-events: none; z-index: 100; text-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        @keyframes giftOut { 0% { transform: scale(0) translateY(0); opacity: 0; } 50% { transform: scale(1.2) opacity: 1; } 100% { transform: scale(1) translateY(-150px); opacity: 0; } }
+        * { 
+            touch-action: pan-y; 
+            user-select: none; 
+            -webkit-user-select: none;
+            box-sizing: border-box;
+        }
+
+        body { 
+            background: var(--bg); color: var(--text); font-family: sans-serif; 
+            margin: 0; padding-bottom: 220px; 
+            overscroll-behavior-y: contain;
+        }
+        
+        .header { background: #000; padding: 12px; text-align: center; border-bottom: 2px solid var(--gold); font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        
+        .stats-row { display: flex; justify-content: space-around; padding: 10px; background: #1a1a1a; color: var(--gold); font-size: 13px; position: sticky; top: 43px; z-index: 100; border-bottom: 1px solid #333; }
+
+        .ranking-list { padding: 10px; }
+        .guild-card { 
+            display: flex; align-items: center; background: var(--card); 
+            margin-bottom: 8px; padding: 15px; border-radius: 6px;
+            border-left: 5px solid var(--gold);
+        }
+        
+        .rank-pos { width: 45px; font-weight: bold; color: var(--gold); font-size: 20px; }
+        .guild-info { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; }
+        .guild-pts { color: #00ff44; font-weight: bold; font-family: monospace; font-size: 16px; }
+
+        .menu-bar { 
+            position: fixed; bottom: 30px; left: 0; width: 100%; 
+            background: rgba(10, 10, 10, 0.98); border-top: 2px solid var(--gold);
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px;
+            z-index: 999;
+        }
+        
+        button { 
+            background: linear-gradient(180deg, var(--gold), var(--orange)); 
+            border: none; padding: 14px 2px; font-weight: bold; border-radius: 4px; 
+            text-transform: uppercase; font-size: 10px; color: #000;
+            box-shadow: 0 3px 0 #804000;
+        }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; }
+        .modal-content { 
+            background: #222; margin: 5% auto; padding: 20px; width: 90%; 
+            border: 2px solid var(--gold); border-radius: 10px; 
+            height: 80vh; overflow-y: auto;
+        }
+        
+        input { width: 100%; padding: 15px; margin: 10px 0; background: #333; border: 1px solid #555; color: #fff; border-radius: 5px; }
+        .player-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #444; }
+        .skill-badge { font-size: 9px; padding: 2px 6px; border-radius: 10px; background: #555; color: #fff; margin-left: 5px; }
     </style>
 </head>
-<body onclick="fecharModais()">
+<body>
 
-<div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:999;"></div>
-
-<div class="gifter-hud">
-    <div onclick="trocarConta(); event.stopPropagation()">
-        <span class="lvl-badge" id="my-lvl-top">Lv.1</span>
-        <span id="my-name-display" style="font-size:13px; border-bottom: 1px dashed white;">@Gifter</span>
-    </div>
-    <div class="coin-box" onclick="addCoins(); event.stopPropagation()">🪙 <span id="coins-display">0</span></div>
+<div class="header">GUERRA DE GUILDAS PRO</div>
+<div class="stats-row">
+    <span>TEMPORADA: <span id="temp-atual">1</span></span>
+    <span>TIMER: <span id="timer">60:00</span></span>
 </div>
 
-<div class="live-wrap">
-    <div class="cam" id="side-me">
-        <div class="streamer-info">
-            <div class="name-tag" id="cur-streamer-name">@BLACK BOLT</div>
-            <div class="wins-badge" id="wins-me">WINS: 0</div>
-        </div>
-        <div class="top-donors" id="tops-me"></div>
-        <div class="buff-timer" id="buff-me"></div>
-        <div id="anim-me" style="position:absolute; width:100%; height:100%; pointer-events:none;"></div>
-    </div>
+<div class="ranking-list" id="ranking-container"></div>
 
-    <div class="cam" id="side-op">
-        <div class="streamer-info">
-            <div class="name-tag">@Oponente_Sniper</div>
-            <div class="wins-badge" id="wins-op">WINS: 0</div>
-        </div>
-        <div class="top-donors" id="tops-op"></div>
-        <div class="buff-timer" id="buff-op"></div>
-        <div id="anim-op" style="position:absolute; width:100%; height:100%; pointer-events:none;"></div>
-    </div>
+<div class="menu-bar">
+    <button onclick="iniciarGuerra()" id="btn-iniciar">INICIAR</button>
+    <button onclick="abrirAdd()">EDITAR NOME</button>
+    <button onclick="verDetalhes()">VER GUILDA</button>
+    <button onclick="verTitulos()">TÍTULOS</button>
+    <button onclick="renderizar()">ATUALIZAR</button>
+    <button onclick="limparDados()" style="background:#cc0000; color:white;">RESET</button>
 </div>
 
-<div class="pk-section">
-    <div class="timer" id="timer">05:00</div>
-    <div class="bar-container">
-        <div id="my-bar"></div>
-        <div class="score-text">
-            <span id="score-me">0</span>
-            <span id="score-op">0</span>
-        </div>
-    </div>
-    <div style="margin-top:12px; display:flex; gap:8px;">
-        <button onclick="startPK(); event.stopPropagation()" style="flex:1; padding:10px; border-radius:10px; background:var(--gold); border:none; font-weight:bold;">⚔️ INICIAR PK</button>
-        <button onclick="changeStreamer(); event.stopPropagation()" style="flex:1; padding:10px; border-radius:10px; background:#333; color:white; border:none;">🔄 MUDAR LIVE</button>
-    </div>
-</div>
-
-<div id="chat"></div>
-
-<div style="position:fixed; bottom:0; width:100%; padding:15px; display:flex; justify-content:flex-end; background:linear-gradient(transparent, #000);">
-    <button onclick="abrirGifts(event)" style="width:60px; height:60px; border-radius:50%; background:linear-gradient(to top, var(--pink), #ff5588); border:none; font-size:28px; color:white; box-shadow: 0 4px 20px rgba(255,0,80,0.5);">🎁</button>
-</div>
-
-<div id="gift-panel" class="gift-panel" onclick="event.stopPropagation()">
-    <div style="margin-bottom:15px; font-size:12px; color:#aaa">Apoiando <b id="target-name">BLACK BOLT</b></div>
-    <div class="gift-grid" id="gift-grid"></div>
+<div id="modal-geral" class="modal">
+    <div class="modal-content" id="modal-body"></div>
 </div>
 
 <script>
-    // SISTEMA DE CONTAS
-    let db = JSON.parse(localStorage.getItem('pk_gifter_v3')) || {
-        active: "CONTA_A",
-        accounts: {
-            "CONTA_A": { name: "Bolt_Fan", lvl: 10, coins: 1000000, xp: 0 },
-            "CONTA_B": { name: "Boss_Sniper", lvl: 45, coins: 5000000, xp: 0 }
-        }
-    };
+    const nomesFera = ["Nobru", "Bak", "Thurzin", "Moreira", "Dantes", "Ghost", "Complex", "Mito", "Jordan", "Lzinn", "Rekkon", "Two9", "Next", "Splash", "ViniJr", "R7", "Bkr", "Zuao", "Kito", "Phx", "Dudu", "Guh", "Teteu", "Biel", "Xand", "Nando", "Mestre", "Cria", "Apelapato"];
+    
+    let guildas = [];
+    let temporadaAtual = 1;
+    let tempoRestante = 3600;
+    let rodando = false;
 
-    // ESTADO DA LIVE
-    let st = { 
-        pk: false, time: 300, ptsMe: 0, ptsOp: 0, winsMe: 0, winsOp: 0,
-        luvaMe: 0, luvaOp: 0, nevoaMe: 0, nevoaOp: 0,
-        topsMe: {}, topsOp: {}, streamer: "BLACK BOLT"
-    };
-
-    const gifts = [
-        { n: 'Rosa', i: '🌹', p: 1 }, { n: 'Névoa', i: '🌪️', p: 400 }, 
-        { n: 'Luva', i: '🧤', p: 1500 }, { n: 'Baleia', i: '🐳', p: 2500 },
-        { n: 'Mini Lion', i: '🦁🍼', p: 10000 }, { n: 'Leão', i: '🦁', p: 29000 },
-        { n: 'Leoa', i: '🦁❤️', p: 34000 }, { n: 'Universo', i: '🪐', p: 44000 }
-    ];
-
-    function loadAccount() {
-        let a = db.accounts[db.active];
-        document.getElementById('my-name-display').innerText = "@" + a.name;
-        document.getElementById('my-lvl-top').innerText = "Lv." + a.lvl;
-        document.getElementById('coins-display').innerText = a.coins.toLocaleString();
-    }
-
-    function processGift(side, sender, giftIdx, amount, lvl = 1) {
-        let g = gifts[giftIdx];
-        let val = g.p * amount;
-        
-        // Aplica Luva (x3)
-        if(side === 'me' && st.luvaMe > 0) val *= 3;
-        if(side === 'op' && st.luvaOp > 0) val *= 3;
-
-        if(side === 'me') { 
-            st.ptsMe += val; 
-            st.topsMe[sender] = { points: (st.topsMe[sender]?.points || 0) + val, lvl: lvl };
-        } else { 
-            st.ptsOp += val; 
-            st.topsOp[sender] = { points: (st.topsOp[sender]?.points || 0) + val, lvl: lvl };
-        }
-
-        // Ativa Efeitos
-        if(giftIdx === 1) { if(side === 'me') st.nevoaOp = 15; else st.nevoaMe = 15; }
-        if(giftIdx === 2) { if(side === 'me') st.luvaMe = 30; else st.luvaOp = 30; }
-
-        renderTops();
-        updateUI();
-
-        // Animação e Chat
-        if(val >= 1000) {
-            let slot = document.getElementById(side === 'me' ? 'anim-me' : 'anim-op');
-            let a = document.createElement('div'); a.className = 'floating-anim';
-            a.innerText = g.i; a.style.left = Math.random()*50+20+"%"; a.style.top = "40%";
-            slot.appendChild(a); setTimeout(() => a.remove(), 1000);
-        }
-        let chat = document.getElementById('chat');
-        chat.innerHTML += `<div class="msg"><b>${sender}</b>: ${g.i} x${amount}</div>`;
-        if(chat.childNodes.length > 5) chat.removeChild(chat.firstChild);
-    }
-
-    function renderTops() {
-        const draw = (side) => {
-            let container = document.getElementById('tops-' + side);
-            let data = side === 'me' ? st.topsMe : st.topsOp;
-            let html = "";
-            Object.entries(data).sort((a,b) => b[1].points - a[1].points).slice(0,5).forEach(([name, info]) => {
-                html += `<div class="donor-item"><span class="lvl-badge" style="zoom:0.8">Lv.${info.lvl}</span> <b>${name}</b></div>`;
+    function gerarMembros() {
+        let time = [];
+        for(let i=0; i<30; i++) {
+            let sk = parseFloat((Math.random() * 1.5 + 0.5).toFixed(1));
+            time.push({
+                nome: nomesFera[Math.floor(Math.random() * nomesFera.length)] + "_" + Math.floor(Math.random()*99),
+                pts: 0,
+                skill: sk
             });
-            container.innerHTML = html;
+        }
+        return time;
+    }
+
+    function criarGuilda(nome) {
+        return {
+            id: "ID-" + Math.random().toString(36).substr(2, 9),
+            nome: nome, 
+            pontos: 0, 
+            players: gerarMembros(),
+            titulos: []
         };
-        draw('me'); draw('op');
     }
 
-    function startPK() {
-        if(st.pk) return;
-        st.pk = true; st.ptsMe = 0; st.ptsOp = 0; st.time = 300;
-        st.luvaMe = 0; st.luvaOp = 0; st.nevoaMe = 0; st.nevoaOp = 0;
-        updateUI();
+    function salvar() {
+        localStorage.setItem('guerra_final_v1', JSON.stringify({ 
+            guildas, temporadaAtual, tempoRestante, rodando, last: Date.now() 
+        }));
+    }
 
-        let loop = setInterval(() => {
-            st.time--;
-            if(st.luvaMe > 0) st.luvaMe--; if(st.luvaOp > 0) st.luvaOp--;
-            if(st.nevoaMe > 0) st.nevoaMe--; if(st.nevoaOp > 0) st.nevoaOp--;
-
-            // IA Adversária
-            if(Math.random() > 0.94) processGift('op', '@Oponente_Pro', 0, 100, 20);
-            if(st.time < 10 && st.ptsMe > st.ptsOp && Math.random() > 0.6) processGift('op', '@Sniper_Hater', 7, 1, 50);
-
-            updateUI();
-
-            if(st.time <= 0) {
-                clearInterval(loop); st.pk = false;
-                if(st.ptsMe > st.ptsOp) { st.winsMe++; st.winsOp = 0; alert("VITÓRIA!"); }
-                else { st.winsMe = 0; st.winsOp++; alert("DERROTA! WINS RESETADAS."); }
-                updateUI();
+    function carregar() {
+        const dados = localStorage.getItem('guerra_final_v1');
+        if (dados) {
+            const d = JSON.parse(dados);
+            guildas = d.guildas;
+            temporadaAtual = d.temporadaAtual;
+            rodando = d.rodando;
+            tempoRestante = d.tempoRestante;
+            
+            let passados = Math.floor((Date.now() - d.last) / 1000);
+            if(rodando && passados > 0) {
+                guildas.forEach(g => {
+                    let media = g.players.reduce((a,b) => a + b.skill, 0) / 30;
+                    let ganho = Math.floor(passados * media * 0.4);
+                    g.pontos += ganho;
+                });
+                tempoRestante = Math.max(0, tempoRestante - passados);
             }
-        }, 1000);
+        } else {
+            for(let i=1; i<=100; i++) guildas.push(criarGuilda("Guilda " + i));
+        }
+        renderizar();
+        if(rodando) loop();
     }
 
-    function updateUI() {
-        document.getElementById('score-me').innerText = st.nevoaMe > 0 ? "???" : st.ptsMe.toLocaleString();
-        document.getElementById('score-op').innerText = st.nevoaOp > 0 ? "???" : st.ptsOp.toLocaleString();
-        document.getElementById('wins-me').innerText = "WINS: " + st.winsMe;
-        document.getElementById('wins-op').innerText = "WINS: " + st.winsOp;
-        document.getElementById('timer').innerText = `${Math.floor(st.time/60)}:${(st.time%60).toString().padStart(2,'0')}`;
-        document.getElementById('my-bar').style.width = (st.ptsMe / (st.ptsMe + st.ptsOp) * 100 || 50) + "%";
+    function loop() {
+        if(!rodando || tempoRestante <= 0) return;
+        tempoRestante--;
         
-        // Timers de Buffs
-        document.getElementById('buff-me').innerHTML = 
-            (st.luvaMe > 0 ? `<div class="buff-luva">🧤 LUVA x3: ${st.luvaMe}s</div>` : "") +
-            (st.nevoaMe > 0 ? `<div class="buff-nevoa">🌪️ NÉVOA: ${st.nevoaMe}s</div>` : "");
-        document.getElementById('buff-op').innerHTML = 
-            (st.luvaOp > 0 ? `<div class="buff-luva">🧤 LUVA x3: ${st.luvaOp}s</div>` : "") +
-            (st.nevoaOp > 0 ? `<div class="buff-nevoa">🌪️ NÉVOA: ${st.nevoaOp}s</div>` : "");
+        guildas.forEach(g => {
+            let sk = g.players.reduce((a,b) => a + b.skill, 0) / 30;
+            if(Math.random() < (0.05 * sk)) {
+                let p = Math.floor(Math.random() * 35 * sk);
+                g.pontos += p;
+                g.players[Math.floor(Math.random()*30)].pts += p;
+            }
+        });
+
+        if(tempoRestante % 10 === 0) {
+            atualizarRelogio();
+            salvar();
+        }
+        setTimeout(loop, 1000);
     }
 
-    function sendGift(idx) {
-        if(!st.pk) return;
-        let a = db.accounts[db.active];
-        let g = gifts[idx];
-        if(a.coins >= g.p) {
-            a.coins -= g.p; a.xp += g.p;
-            if(a.xp >= a.lvl * 5000) { a.lvl++; a.xp = 0; }
-            processGift('me', "@" + a.name, idx, 1, a.lvl);
-            loadAccount();
-            localStorage.setItem('pk_gifter_v3', JSON.stringify(db));
+    function renderizar() {
+        const container = document.getElementById('ranking-container');
+        container.innerHTML = "";
+        guildas.sort((a,b) => b.pontos - a.pontos);
+        guildas.slice(0, 100).forEach((g, i) => {
+            container.innerHTML += `
+                <div class="guild-card">
+                    <div class="rank-pos">${i + 1}º</div>
+                    <div class="guild-info">
+                        <div class="guild-name">${g.nome}</div>
+                        <div class="guild-pts">${g.pontos}</div>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('temp-atual').innerText = temporadaAtual;
+        atualizarRelogio();
+    }
+
+    function abrirAdd() {
+        const m = document.getElementById('modal-body');
+        m.innerHTML = `
+            <h3>TROCAR NOME</h3>
+            <input type="text" id="oldN" placeholder="Nome atual (Ex: Guilda 5)">
+            <input type="text" id="newN" placeholder="Novo nome">
+            <button onclick="confirmaTroca()" style="width:100%">SALVAR NOME</button>
+            <button onclick="fechar()" style="width:100%; margin-top:10px; background:#555; color:#fff">VOLTAR</button>
+        `;
+        document.getElementById('modal-geral').style.display = 'block';
+    }
+
+    function confirmaTroca() {
+        let o = document.getElementById('oldN').value;
+        let n = document.getElementById('newN').value;
+        let g = guildas.find(x => x.nome.toLowerCase() === o.toLowerCase());
+        if(g && n) {
+            g.nome = n.toUpperCase();
+            fechar(); renderizar(); salvar();
+        } else { alert("Nome original não encontrado!"); }
+    }
+
+    function verDetalhes() {
+        let r = prompt("Posição no Rank (1-100):");
+        if(!r) return;
+        let g = guildas[parseInt(r)-1];
+        if(!g) return;
+
+        const m = document.getElementById('modal-body');
+        let pH = g.players.sort((a,b) => b.pts - a.pts).map(p => `
+            <div class="player-row">
+                <span>${p.nome} <span class="skill-badge">SKILL: ${p.skill}</span></span>
+                <span style="color:#0f0">+${p.pts}</span>
+            </div>`).join("");
+            
+        m.innerHTML = `
+            <h2>${g.nome}</h2>
+            <button onclick="novoTime('${g.id}')" style="width:100%; margin-bottom:15px">RECRUTAR NOVOS (RESET SKILL)</button>
+            ${pH}
+            <button onclick="fechar()" style="width:100%; margin-top:15px; background:#f44; color:#fff">FECHAR</button>
+        `;
+        document.getElementById('modal-geral').style.display = 'block';
+    }
+
+    function novoTime(id) {
+        let g = guildas.find(x => x.id === id);
+        if(confirm("Deseja trocar os jogadores? Isso altera a skill da guilda.")) {
+            g.players = gerarMembros();
+            fechar(); renderizar(); salvar();
         }
     }
 
-    function trocarConta() {
-        let n = prompt("Nome da conta:");
-        if(!n) return;
-        let id = n.toUpperCase().replace(/\s/g, '_');
-        if(!db.accounts[id]) db.accounts[id] = { name: n, lvl: 1, coins: 50000, xp: 0 };
-        db.active = id; loadAccount();
+    function verTitulos() {
+        let r = prompt("Posição no Rank (1-100):");
+        if(!r) return;
+        let g = guildas[parseInt(r)-1];
+        if(!g) return;
+        const m = document.getElementById('modal-body');
+        let tH = g.titulos.map(t => `<p>🏆 TEMP ${t.temp}: ${t.pos}º LUGAR</p>`).join("");
+        m.innerHTML = `<h3>GALERIA: ${g.nome}</h3>${tH || "Nenhum troféu ainda"}<button onclick="fechar()" style="width:100%; margin-top:20px">VOLTAR</button>`;
+        document.getElementById('modal-geral').style.display = 'block';
     }
 
-    function changeStreamer() {
-        let n = prompt("Apoiar qual streamer?");
-        if(n) {
-            st.streamer = n.toUpperCase();
-            st.winsMe = 0; st.winsOp = 0; st.ptsMe = 0; st.ptsOp = 0;
-            st.topsMe = {}; st.topsOp = {};
-            document.getElementById('cur-streamer-name').innerText = "@" + st.streamer;
-            document.getElementById('target-name').innerText = st.streamer;
-            renderTops(); updateUI();
-        }
+    function atualizarRelogio() {
+        let m = Math.floor(tempoRestante / 60); let s = tempoRestante % 60;
+        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
     }
 
-    function addCoins() { let v = prompt("Moedas:"); if(v) { db.accounts[db.active].coins += parseInt(v); loadAccount(); } }
-    function abrirGifts(e) { e.stopPropagation(); document.getElementById('gift-panel').classList.add('active'); document.getElementById('overlay').style.display='block'; }
-    function fecharModais() { document.getElementById('gift-panel').classList.remove('active'); document.getElementById('overlay').style.display='none'; }
-
-    // Init
-    const grid = document.getElementById('gift-grid');
-    gifts.forEach((g, i) => {
-        let c = document.createElement('div'); c.className = 'gift-card';
-        c.innerHTML = `<div style="font-size:26px">${g.i}</div><div>${g.n}</div><div style="color:var(--gold)">${g.p}</div>`;
-        c.onclick = () => sendGift(i);
-        grid.appendChild(c);
-    });
-    loadAccount(); updateUI();
+    function iniciarGuerra() { rodando = true; document.getElementById('btn-iniciar').innerText="NO AR"; loop(); }
+    function fechar() { document.getElementById('modal-geral').style.display = 'none'; }
+    function limparDados() { if(confirm("APAGAR TUDO?")) { localStorage.clear(); location.reload(); } }
+    
+    window.onload = carregar;
 </script>
 </body>
 </html>
